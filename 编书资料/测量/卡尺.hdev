@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="23.05.0.0">
+<procedure name="main">
+<interface/>
+<body>
+<c>* 清空屏幕，显式控制图像显示</c>
+<l>dev_close_window ()</l>
+<l>dev_update_off ()</l>
+<l>read_image (Image, '1.png')</l>
+<c></c>
+<l>dev_open_window_fit_image (Image, 0, 0, -1, -1, WindowHandle)</l>
+<l>dev_display (Image)</l>
+<l>* gen_region_line (ROI_0,60.4159 , 69.5854, 60.4159, 243.094)</l>
+<c>* 创建测量模型</c>
+<l>create_metrology_model (MetrologyHandle)</l>
+<l>Row1 := 60.4159</l>
+<l>Column1 := 69.5854</l>
+<l>Row2 := 60.4159</l>
+<l>Column2 := 243.094</l>
+<c></c>
+<c>* 添加找直线工具，给定参数，显示过程卡尺的轮廓</c>
+<l>add_metrology_object_line_measure (MetrologyHandle, Row1, Column1, Row2, Column2, 20, 5, 1, 30, [], [], Index)</l>
+<l>get_metrology_object_model_contour (Contour, MetrologyHandle, 0, 1.5)</l>
+<l>get_metrology_object_measures (Contours, MetrologyHandle, 'all', 'all', Row, Column)</l>
+<l>dev_set_color('cyan')</l>
+<l>dev_display (Contour)</l>
+<l>dev_display (Contours)</l>
+<c></c>
+<c>* 执行找直线并显示结果</c>
+<l>apply_metrology_model (Image, MetrologyHandle)</l>
+<l>get_metrology_object_result (MetrologyHandle, 0, 'all', 'result_type', 'all_param', Parameter)</l>
+<l>get_metrology_object_result_contour (Contour1, MetrologyHandle, 0, 'all', 1.5)</l>
+<l>dev_set_line_width (3)</l>
+<l>dev_set_color ('red')</l>
+<l>dev_display (Contour1)</l>
+<l>clear_metrology_model (MetrologyHandle)</l>
+<c></c>
+<c>* 清空屏幕，显式控制图像显示</c>
+<l>dev_close_window ()</l>
+<l>dev_update_off ()</l>
+<l>read_image (Image, '1.png')</l>
+<l>dev_open_window_fit_image (Image, 0, 0, -1, -1, WindowHandle)</l>
+<l>dev_display (Image)</l>
+<l>* gen_circle (ROI_0, 130.086, 143.525, 20.9306)</l>
+<c>* 创建测量模型</c>
+<l>create_metrology_model (MetrologyHandle)</l>
+<l>Row1 := 130.086</l>
+<l>Column1 := 143.525</l>
+<l>Radius := 20.9306</l>
+<c></c>
+<c>* 添加找圆工具，给定参数，显示过程卡尺</c>
+<l>add_metrology_object_circle_measure (MetrologyHandle, Row1, Column1, Radius, 12, 3, 1, 30, [], [], Index)</l>
+<l>get_metrology_object_model_contour (Contour, MetrologyHandle, 0, 1.5)</l>
+<l>get_metrology_object_measures (Contours, MetrologyHandle, 'all', 'all', Row, Column)</l>
+<l>dev_set_color('cyan')</l>
+<l>dev_display (Contour)</l>
+<l>dev_display (Contours)</l>
+<c></c>
+<c>* 执行找圆并显示结果</c>
+<l>apply_metrology_model (Image, MetrologyHandle)</l>
+<l>get_metrology_object_result (MetrologyHandle, 0, 'all', 'result_type', 'all_param', Parameter)</l>
+<l>get_metrology_object_result_contour (Contour1, MetrologyHandle, 0, 'all', 1.5)</l>
+<l>dev_set_line_width (3)</l>
+<l>dev_set_color ('red')</l>
+<l>dev_display (Contour1)</l>
+<l>clear_metrology_model (MetrologyHandle)</l>
+<c></c>
+<c></c>
+<c>* 清空屏幕，显式控制图像显示</c>
+<l>dev_close_window ()</l>
+<l>dev_update_off ()</l>
+<l>dev_open_window_fit_image (Image, 0, 0, -1, -1, WindowHandle)</l>
+<l>read_image (Image, '2.png')</l>
+<l>dev_display (Image)</l>
+<l>* gen_ellipse (ROI_0, 127.999, 64.0592, rad(90), 104.787, 31.8445)</l>
+<c>* 创建测量模型</c>
+<l>create_metrology_model (MetrologyHandle)</l>
+<l>Row1 := 127.999</l>
+<l>Column1 := 64.0592</l>
+<l>Phi := rad(90)</l>
+<l>Radius1 := 104.787</l>
+<l>Radius2 := 31.8445</l>
+<c>* 添加找椭圆工具，给定参数，显示过程卡尺</c>
+<l>add_metrology_object_ellipse_measure (MetrologyHandle, Row1, Column1, Phi, Radius1, Radius2, 12, 3, 1, 30, [], [], Index)</l>
+<l>get_metrology_object_model_contour (Contour, MetrologyHandle, 0, 1.5)</l>
+<l>get_metrology_object_measures (Contours, MetrologyHandle, 'all', 'all', Row, Column)</l>
+<l>dev_set_color('cyan')</l>
+<l>dev_display (Contour)</l>
+<l>dev_display (Contours)</l>
+<c></c>
+<c>* 执行找椭圆并显示结果</c>
+<l>apply_metrology_model (Image, MetrologyHandle)</l>
+<l>get_metrology_object_result (MetrologyHandle, 0, 'all', 'result_type', 'all_param', Parameter)</l>
+<l>get_metrology_object_result_contour (Contour1, MetrologyHandle, 0, 'all', 1.5)</l>
+<l>dev_set_line_width (3)</l>
+<l>dev_set_color ('red')</l>
+<l>dev_display (Contour1)</l>
+<l>clear_metrology_model (MetrologyHandle)</l>
+<c></c>
+<c></c>
+<c>* 清空屏幕，显式控制图像显示</c>
+<l>dev_close_window ()</l>
+<l>dev_update_off ()</l>
+<l>read_image (Image, '1.png')</l>
+<l>dev_open_window_fit_image (Image, 0, 0, -1, -1, WindowHandle)</l>
+<l>dev_display (Image)</l>
+<l>* gen_rectangle2 (ROI_0, 180.346, 261.975, rad(-0.264078), 194.727, 120.459)</l>
+<c>* 创建测量模型</c>
+<l>create_metrology_model (MetrologyHandle)</l>
+<l>Row1 := 180.346</l>
+<l>Column1 := 261.975</l>
+<l>Length1 := 194.727</l>
+<l>Length2 := 120.459</l>
+<l>Phi := rad(-0.264078)</l>
+<c></c>
+<c></c>
+<c>* 添加找矩形工具，给定参数，显示过程卡尺</c>
+<l>add_metrology_object_rectangle2_measure (MetrologyHandle, Row1, Column1, Phi, Length1, Length2, 12, 3, 1, 30, [], [], Index)</l>
+<l>get_metrology_object_model_contour (Contour, MetrologyHandle, 0, 1.5)</l>
+<l>get_metrology_object_measures (Contours, MetrologyHandle, 'all', 'all', Row, Column)</l>
+<l>dev_set_color('cyan')</l>
+<l>dev_display (Contour)</l>
+<l>dev_display (Contours)</l>
+<c></c>
+<c>* 执行找矩形并显示结果</c>
+<l>apply_metrology_model (Image, MetrologyHandle)</l>
+<l>get_metrology_object_result (MetrologyHandle, 0, 'all', 'result_type', 'all_param', Parameter)</l>
+<l>get_metrology_object_result_contour (Contour1, MetrologyHandle, 0, 'all', 1.5)</l>
+<l>dev_set_line_width (3)</l>
+<l>dev_set_color ('red')</l>
+<l>dev_display (Contour1)</l>
+<l>clear_metrology_model (MetrologyHandle)</l>
+<c></c>
+<c></c>
+<c></c>
+<c>* 清空屏幕，显式控制图像显示</c>
+<l>dev_close_window ()</l>
+<l>dev_update_off ()</l>
+<l>read_image (Image, '1.png')</l>
+<l>dev_open_window_fit_image (Image, 0, 0, -1, -1, WindowHandle)</l>
+<l>dev_display (Image)</l>
+<l>* gen_rectangle2 (ROI_0, 138.007, 291.483, rad(-0), 21.4609, 21.0581)</l>
+<c>* 创建测量模型</c>
+<l>create_metrology_model (MetrologyHandle)</l>
+<l>Row1 := 138.007</l>
+<l>Column1 := 291.483</l>
+<l>Length1 := 21.4609</l>
+<l>Length2 := 21.0581</l>
+<l>Phi := rad(-0)</l>
+<c></c>
+<c></c>
+<c>* 添加找矩形工具，给定参数，显示过程卡尺</c>
+<l>add_metrology_object_generic (MetrologyHandle, 'rectangle2', [Row1, Column1, Phi, Length1, Length2], 12, 3, 1, 30, [], [], Index)</l>
+<l>get_metrology_object_model_contour (Contour, MetrologyHandle, 0, 1.5)</l>
+<l>get_metrology_object_measures (Contours, MetrologyHandle, 0, 'all', Row, Column)</l>
+<l>dev_set_color('cyan')</l>
+<l>dev_display (Contour)</l>
+<l>dev_display (Contours)</l>
+<c></c>
+<c>* 添加找圆工具，给定参数，显示过程卡尺</c>
+<l>Row2 := 130.086</l>
+<l>Column2 := 143.525</l>
+<l>Radius := 20.9306</l>
+<l>add_metrology_object_generic (MetrologyHandle, 'circle', [Row2, Column2, Radius], 12, 3, 1, 30, [], [], Index1)</l>
+<l>get_metrology_object_model_contour(Contour2, MetrologyHandle, 1, 1.5)</l>
+<l>get_metrology_object_measures (Contours3, MetrologyHandle, 1, 'all', Row3, Column3)</l>
+<l>dev_set_color ('green')</l>
+<l>dev_display (Contour2)</l>
+<l>dev_display (Contours3)</l>
+<c></c>
+<l>dev_set_line_width (3)</l>
+<c>* 执行找矩形并显示结果</c>
+<l>apply_metrology_model (Image, MetrologyHandle)</l>
+<l>get_metrology_object_result (MetrologyHandle, 0, 'all', 'result_type', 'all_param', Parameter1)</l>
+<l>get_metrology_object_result_contour (Contour1, MetrologyHandle, 0, 'all', 1.5)</l>
+<l>get_metrology_object_result (MetrologyHandle, 1, 'all', 'result_type', 'all_param', Parameter2)</l>
+<l>get_metrology_object_result_contour (Contour3, MetrologyHandle, 1, 'all', 1.5)</l>
+<l>dev_set_color ('red')</l>
+<l>dev_display (Contour1)</l>
+<l>dev_display (Contour3)</l>
+<l>clear_metrology_model (MetrologyHandle)</l>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c>* 清空屏幕，显式控制图像显示</c>
+<l>dev_close_window ()</l>
+<l>dev_update_off ()</l>
+<l>read_image (Image, '1.png')</l>
+<l>dev_open_window_fit_image (Image, 0, 0, -1, -1, WindowHandle)</l>
+<l>dev_display (Image)</l>
+<c></c>
+<c>* </c>
+<c>* Matching 01: ************************************************</c>
+<c>* Matching 01: 模型初始化</c>
+<c>* Matching 01: ************************************************</c>
+<l>set_system ('border_shape_models', 'false')</l>
+<c></c>
+<c>* </c>
+<c>* Matching 01: 从基本区域构建ROI</c>
+<l>gen_rectangle1 (ModelRegion, 41.9811, 50.1341, 322.331, 481.792)</l>
+<c>* </c>
+<c>* Matching 01: 从原图提取模型模板</c>
+<l>reduce_domain (Image, ModelRegion, TemplateImage)</l>
+<c>* </c>
+<c>* Matching 01: 创建形状模板</c>
+<l>create_shape_model (TemplateImage, 5, rad(0), rad(360), rad(1), ['none','no_pregeneration'], 'use_polarity', [30,30,0], 10, ModelID)</l>
+<c>* </c>
+<c>* Matching 01: 获取模型轮廓，以便稍后将其转换为图像</c>
+<l>get_shape_model_contours (ModelContours, ModelID, 1)</l>
+<c>* </c>
+<c>* Matching 01: 获取参考位置</c>
+<l>area_center (ModelRegion, ModelRegionArea, RefRow, RefColumn)</l>
+<l>vector_angle_to_rigid (0, 0, 0, RefRow, RefColumn, 0, HomMat2D)</l>
+<l>affine_trans_contour_xld (ModelContours, TransContours, HomMat2D)</l>
+<c>* </c>
+<c>* Matching 01: 显示模型轮廓</c>
+<l>dev_display (Image)</l>
+<l>dev_set_color ('green')</l>
+<l>dev_set_draw ('margin')</l>
+<l>dev_display (ModelRegion)</l>
+<l>dev_display (TransContours)</l>
+<l>stop ()</l>
+<c>* </c>
+<c>* Matching 01: 匹配形状模板</c>
+<l>find_shape_model (Image, ModelID, rad(0), rad(360), 0.5, 0, 0.5, 'least_squares', [5,1], 0.75, Row, Column, Angle, Score)</l>
+<c>* </c>
+<l>dev_display (Image)</l>
+<l>for I := 0 to |Score| - 1 by 1</l>
+<l>    hom_mat2d_identity (HomMat2D)</l>
+<l>    hom_mat2d_rotate (HomMat2D, Angle[I], 0, 0, HomMat2D)</l>
+<l>    hom_mat2d_translate (HomMat2D, Row[I], Column[I], HomMat2D)</l>
+<l>    affine_trans_contour_xld (ModelContours, TransContours, HomMat2D)</l>
+<l>    dev_set_color ('green')</l>
+<l>    dev_display (TransContours)</l>
+<l>    stop ()</l>
+<l>endfor</l>
+<c>* 创建测量模型</c>
+<l>create_metrology_model (MetrologyHandle)</l>
+<l>Row1 := 130.086</l>
+<l>Column1 := 143.525</l>
+<l>Radius := 20.9306</l>
+<c></c>
+<c>* 添加找圆工具，给定参数，显示过程卡尺</c>
+<l>add_metrology_object_circle_measure (MetrologyHandle, Row1, Column1, Radius, 12, 3, 1, 30, [], [], Index)</l>
+<l>get_metrology_object_model_contour (Contour, MetrologyHandle, 0, 1.5)</l>
+<l>get_metrology_object_measures (Contours, MetrologyHandle, 'all', 'all', Row3, Column3)</l>
+<l>dev_set_color('cyan')</l>
+<l>dev_display (Contour)</l>
+<l>dev_display (Contours)</l>
+<c></c>
+<c>* 执行找圆并显示结果</c>
+<l>apply_metrology_model (Image, MetrologyHandle)</l>
+<l>get_metrology_object_result (MetrologyHandle, 0, 'all', 'result_type', 'all_param', Parameter)</l>
+<l>get_metrology_object_result_contour (Contour1, MetrologyHandle, 0, 'all', 1.5)</l>
+<l>dev_set_line_width (3)</l>
+<l>dev_set_color ('red')</l>
+<l>dev_display (Contour1)</l>
+<c></c>
+<l>stop()</l>
+<c></c>
+<c>* 绑定测量卡尺到形状模板上</c>
+<l>set_metrology_model_param (MetrologyHandle, 'reference_system', [Row, Column, 0])</l>
+<c></c>
+<c>* 读取另一幅图片</c>
+<l>threshold (Image, Region, 0, 255)</l>
+<l>area_center (Region, Area, Row5, Column5)</l>
+<l>hom_mat2d_identity (HomMat2D)</l>
+<l>hom_mat2d_rotate (HomMat2D, 0.2, Row5, Column5, HomMat2D)</l>
+<l>affine_trans_image (Image, ImageAffineTrans, HomMat2D, 'constant', 'false')</l>
+<l>* read_image (Image1, '3.png')</l>
+<l>find_shape_model (ImageAffineTrans, ModelID, rad(0), rad(360), 0.5, 0, 0.5, 'least_squares', [5,1], 0.75, Row2, Column2, Angle1, Score1)</l>
+<l>align_metrology_model (MetrologyHandle, Row2, Column2, Angle1)</l>
+<l>get_metrology_object_measures (Contours1, MetrologyHandle, 'all', 'all', Row4, Column4)</l>
+<l>dev_clear_window ()</l>
+<l>dev_display (ImageAffineTrans)</l>
+<l>dev_set_line_width (1)</l>
+<l>dev_set_color ('cyan')</l>
+<l>dev_display (Contours1)</l>
+<c>*模板匹配的同时测量圆的相关参数</c>
+<l>apply_metrology_model (ImageAffineTrans, MetrologyHandle)</l>
+<l>get_metrology_object_result (MetrologyHandle, 0, 'all', 'result_type', 'all_param', Parameter1)</l>
+<l>get_metrology_object_result_contour (Contour2, MetrologyHandle, 0, 'all', 1.5)</l>
+<l>dev_set_line_width (3)</l>
+<l>dev_set_color ('red')</l>
+<l>dev_display (Contour2)</l>
+<l>clear_metrology_model (MetrologyHandle)</l>
+<l>clear_shape_model (ModelID)</l>
+<c></c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="23.05.0.0">
+<procedure name="main">
+<interface/>
+<body>
+<l>dev_close_window ()</l>
+<l>dev_open_window (0, 0, 640, 480, 'black', WindowHandle)</l>
+<l>set_display_font (WindowHandle, 14, 'mono', 'true', 'false')</l>
+<c>* Part 1利用反射率图像检测皮革表面缺陷</c>
+<l>read_image (Images, 'photometric_stereo/leather_1_0' + [1:4])</l>
+<l>write_image (Images, 'tiff', 0, 'D:/1.tiff')</l>
+<c>** 展示不同方向光源成像图像</c>
+<l>for I := 1 to 4 by 1</l>
+<l>    Message := 'Sample 1: Acquire image ' + I + ' of 4'</l>
+<l>    select_obj (Images, ObjectSelected, I)</l>
+<l>    dev_display (ObjectSelected)</l>
+<l>    disp_message (WindowHandle, Message, 'window', 12, 12, 'black', 'true')</l>
+<l>    wait_seconds (0.5)</l>
+<l>endfor</l>
+<c>* 应用光度立体法生成的反射率图进行缺陷检测</c>
+<l>Tilts := [6.1,95.0,-176.1,-86.8]</l>
+<l>Slants := [41.4,42.6,41.7,40.9]</l>
+<l>ResultType := ['gradient','albedo']</l>
+<l>photometric_stereo (Images, HeightField, Gradient, Albedo, Slants, Tilts, ResultType, 'poisson', [], [])</l>
+<c>* 显示反射率图</c>
+<l>dev_display (Albedo)</l>
+<c>*检测缺陷</c>
+<l>var_threshold (Albedo, Region, 15, 15, 0.4, 0.4, 'light')</l>
+<l>connection (Region, ConnectedRegions)</l>
+<l>select_shape (ConnectedRegions, SelectedRegions, 'area', 'and', 10, 99999)</l>
+<l>union1 (SelectedRegions, RegionUnion)</l>
+<l>closing_circle (RegionUnion, RegionClosing, 3.5)</l>
+<l>connection (RegionClosing, Defects)</l>
+<l>area_center (Defects, Area, Row, Column)</l>
+<l>gen_circle (Circle, Row, Column, gen_tuple_const(|Row|,sqrt(Area) + 30))</l>
+<c>*显示缺陷</c>
+<l>dev_display (Albedo)</l>
+<l>dev_set_color ('red')</l>
+<l>dev_set_draw ('margin')</l>
+<l>dev_set_line_width (4)</l>
+<l>dev_display (Circle)</l>
+<c></c>
+<c>* Part 2 利用梯度图像检测皮革表面缺陷</c>
+<l>read_image (Images, 'photometric_stereo/leather_2_0' + [1:4])</l>
+<l>for I := 1 to 4 by 1</l>
+<l>    Message := 'Sample 2: Acquire image ' + I + ' of 4'</l>
+<l>    select_obj (Images, ObjectSelected, I)</l>
+<l>    dev_display (ObjectSelected)</l>
+<l>    disp_message (WindowHandle, Message, 'window', 12, 12, 'black', 'true')</l>
+<l>    wait_seconds (0.5)</l>
+<l>endfor</l>
+<c></c>
+<c>* 应用光度立体法生成的反射率图</c>
+<l>photometric_stereo (Images, HeightField, Gradient, Albedo, Slants, Tilts, ResultType, 'poisson', [], [])</l>
+<c>*对反射率图二值化（发现无法二值化）</c>
+<l>threshold (Albedo, Region1, 128, 255)</l>
+<c>* 显示反射率图</c>
+<l>dev_display (Albedo)</l>
+<l>derivate_vector_field (Gradient, Curl, 1, 'curl')</l>
+<l>derivate_gauss (Curl, CurlGradient, 1, 'gradient')</l>
+<c>* 显示梯度图</c>
+<l>dev_display (CurlGradient)</l>
+<l>Message := 'Changes in the gradient curl'</l>
+<l>disp_message (WindowHandle, Message, 'window', 12, 12, 'black', 'true')</l>
+<l>disp_continue_message (WindowHandle, 'black', 'true')</l>
+<l>stop ()</l>
+<c></c>
+<c>* 用梯度图寻找缺陷</c>
+<l>threshold (CurlGradient, Region, 0, 0.01)</l>
+<l>rank_region (Region, RegionCount, 10, 10, 30)//归类区域</l>
+<l>connection (RegionCount, ConnectedRegions)</l>
+<l>select_shape (ConnectedRegions, SelectedRegions, 'area', 'and', 2000, 99999)</l>
+<l>union1 (SelectedRegions, RegionUnion)</l>
+<l>rank_region (RegionUnion, RegionCount1, 25, 25, 170)</l>
+<l>connection (RegionCount1, NoTextured)</l>
+<c></c>
+<c>* 显示</c>
+<l>dev_display (Albedo)</l>
+<l>dev_set_draw ('margin')</l>
+<l>dev_set_color ('red')</l>
+<l>dev_set_line_width (3)</l>
+<l>dev_display (NoTextured)</l>
+<l>disp_message (WindowHandle, 'Non-textured areas on leather', 'window', 12, 12, 'black', 'true')</l>
+<l>stop ()</l>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>

@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="23.05.0.0">
+<procedure name="main">
+<interface/>
+<body>
+<c>*这个例子使用差分模型检查瓶盖。这里的困难在于检查过程中光照的变化。</c>
+<c>*使用单个图像作为理想图像。本文的差分模型是用sobel_amp算子对理想图像进行预处理得到的。</c>
+<c>* </c>
+<l>dev_update_off ()</l>
+<l>dev_close_window ()</l>
+<c>* </c>
+<c>* 读取模型图像并初始化可视化</c>
+<l>read_image (ModelImage, 'cap_illumination/cap_illumination_01')</l>
+<l>get_image_size (ModelImage, Width, Height)</l>
+<l>dev_open_window (0, 0, Width / 2, Height / 2, 'black', WindowHandle)</l>
+<l>set_display_font (WindowHandle, 14, 'mono', 'true', 'false')</l>
+<c>* </c>
+<c>* 分割模型区域</c>
+<l>dev_display (ModelImage)</l>
+<l>binary_threshold (ModelImage, BrightRegion, 'max_separability', 'light', UsedThreshold)</l>
+<l>dilation_circle (BrightRegion, RegionDilation, 1.5)</l>
+<l>connection (RegionDilation, ConnectedRegions)</l>
+<l>select_shape (ConnectedRegions, SelectedRegions, 'area', 'and', 100, 99999)</l>
+<l>union1 (SelectedRegions, LabelRegion)</l>
+<l>smallest_circle (LabelRegion, Row, Column, Radius)</l>
+<l>smallest_rectangle1 (LabelRegion, Row1, Column1, Row2, Column2)</l>
+<c>* 定义模型区域</c>
+<l>gen_circle (Region, Row, Column, Radius)</l>
+<l>gen_rectangle1 (LabelRectangle, Row1, Column1, Row2, Column2)</l>
+<l>intersection (Region, LabelRectangle, RegionIntersection)</l>
+<l>dilation_circle (RegionIntersection, RegionROI, 5.5)</l>
+<l>reduce_domain (ModelImage, RegionROI, ImageReduced)</l>
+<l>binary_threshold (ModelImage, BrightRegion, 'max_separability', 'light', UsedThreshold)</l>
+<l>dilation_circle (BrightRegion, RegionDilation, 1.5)</l>
+<l>connection (RegionDilation, ConnectedRegions)</l>
+<l>select_shape (ConnectedRegions, SelectedRegions, 'area', 'and', 100, 99999)</l>
+<l>union1 (SelectedRegions, LabelRegion)</l>
+<l>smallest_circle (LabelRegion, Row, Column, Radius)</l>
+<l>smallest_rectangle1 (LabelRegion, Row1, Column1, Row2, Column2)</l>
+<l>gen_circle (Region, Row, Column, Radius)</l>
+<l>gen_rectangle1 (LabelRectangle, Row1, Column1, Row2, Column2)</l>
+<l>intersection (Region, LabelRectangle, RegionIntersection)</l>
+<l>dilation_circle (RegionIntersection, RegionROI, 5.5)</l>
+<l>reduce_domain (ModelImage, RegionROI, ImageReduced)</l>
+<l>area_center (RegionROI, Area, RowModel, ColumnModel)</l>
+<l>dev_set_draw ('margin')</l>
+<l>dev_set_color ('green')</l>
+<l>dev_display (RegionROI)</l>
+<c>* </c>
+<c>* 创建形状模板匹配模板</c>
+<l>create_generic_shape_model (ModelID)</l>
+<l>set_generic_shape_model_param (ModelID, 'iso_scale_min', 0.98)</l>
+<l>set_generic_shape_model_param (ModelID, 'iso_scale_max', 1.02)</l>
+<l>train_generic_shape_model (ImageReduced, ModelID)</l>
+<l>set_generic_shape_model_param (ModelID, 'min_score', 0.55)</l>
+<l>set_generic_shape_model_param (ModelID, 'num_matches', 1)</l>
+<l>set_generic_shape_model_param (ModelID, 'max_overlap', 0)</l>
+<l>set_generic_shape_model_param (ModelID, 'pyramid_level_lowest', 3)</l>
+<c>* </c>
+<c>* 为检测创建一个差分模型.</c>
+<l>create_variation_model (Width, Height, 'byte', 'direct', VariationID)</l>
+<c>* 生成差分图像。</c>
+<l>sobel_amp (ModelImage, VarImage, 'sum_abs', 5)</l>
+<l>prepare_direct_variation_model (ModelImage, VarImage, VariationID, [20, 25], [1.6, 1.6])</l>
+<c>* </c>
+<c>* </c>
+<c>* 为了补偿光照的变化，在此过程中确定了变化模型的灰度值范围。</c>
+<c>* 在该过程中，理想图像被约束到盖子上的感兴趣区域。</c>
+<c>* 然后，使用binary_threshold和difference将简化后的图像分割为前景和背景。</c>
+<c>* 最后，通过灰度强度查询到两个区域灰度值的均值和标准差。</c>
+<l>reduce_domain (ModelImage, RegionROI, ImageReduced)</l>
+<l>binary_threshold (ImageReduced, RegionBackground, 'max_separability', 'dark', UsedThreshold)</l>
+<l>difference (RegionROI, RegionBackground, RegionForeground)</l>
+<l>intensity (RegionForeground, ModelImage, ForegroundGVal, DeviationFG)</l>
+<l>intensity (RegionBackground, ModelImage, BackgroundGVal, DeviationBG)</l>
+<c>* 执行可视化检测</c>
+<c as_id="image_acquisition" as_name="Image Acquisition 01" as_grp="[1,1]" as_ord="1">* 图像采集</c>
+<l as_id="image_acquisition" as_name="Image Acquisition 01" as_grp="[1,2]" as_ord="1">list_files ('cap_illumination', ['files','follow_links'], ImageFiles)</l>
+<l as_id="image_acquisition" as_name="Image Acquisition 01" as_grp="[1,3]" as_ord="1">tuple_regexp_select (ImageFiles, ['\\.(tif|tiff|gif|bmp|jpg|jpeg|jp2|png|pcx|pgm|ppm|pbm|xwd|ima|hobj)$','ignore_case'], ImageFiles)</l>
+<l as_id="image_acquisition" as_name="Image Acquisition 01" as_grp="[2,2]" as_ord="1">for Index := 0 to |ImageFiles| - 1 by 1</l>
+<l as_id="image_acquisition" as_name="Image Acquisition 01" as_grp="[2,3]" as_ord="1">    read_image (rImage, ImageFiles[Index])</l>
+<l>    count_seconds (StartSeconds)</l>
+<l>    find_generic_shape_model (rImage, ModelID, MatchResultID, NumMatchResult)</l>
+<l>    count_seconds (EndSeconds)</l>
+<l>    TimeObjSearch := EndSeconds - StartSeconds</l>
+<l>    if (NumMatchResult &gt; 0)</l>
+<c>        * </c>
+<c>        * 在这里，在每个图像中搜索对象并按照前面的示例进行对齐。</c>
+<c>        * 然后，推导出待检测对象的感兴趣区域的灰度值范围，</c>
+<c>        * 使图像适应差分模型的灰度值范围，再与差分模型进行比较。</c>
+<c>        * 因此，也可以比较在不同照明下拍摄的图像。</c>
+<c>        * 使用算子compare_ext_variation_model</c>
+<c>        * 进行图像比较的模式被设置为light_dark，</c>
+<c>        * 因此在RegionDiff中返回太亮和太暗的图像点的单独区域</c>
+<l>        get_generic_shape_model_result (MatchResultID, 'best', 'row', Row)</l>
+<l>        get_generic_shape_model_result (MatchResultID, 'best', 'column', Column)</l>
+<l>        get_generic_shape_model_result (MatchResultID, 'best', 'angle', Angle)</l>
+<l>        vector_angle_to_rigid (Row, Column, Angle, RowModel[0], ColumnModel[0], 0, HomMat2DImage)</l>
+<l>        affine_trans_image (rImage, ImageAffineTrans, HomMat2DImage, 'constant', 'false')   </l>
+<l>        reduce_domain (ImageAffineTrans, RegionROI, ImageReduced)</l>
+<l>        binary_threshold (ImageReduced, RegionBackground, 'max_separability', 'dark', UsedThreshold)</l>
+<l>        difference (RegionROI, RegionBackground, RegionForeground)</l>
+<l>        intensity (RegionForeground, ImageAffineTrans, ForegroundGVal_2, DeviationFG)</l>
+<l>        intensity (RegionBackground, ImageAffineTrans, BackgroundGVal_2, DeviationBG) </l>
+<c>        </c>
+<c>        * 将图像缩放到模型的灰度值范围。</c>
+<l>        Mult := (ForegroundGVal - BackgroundGVal) / (ForegroundGVal_2 - BackgroundGVal_2)</l>
+<l>        Add := ForegroundGVal - Mult * ForegroundGVal_2</l>
+<l>        reduce_domain (ImageAffineTrans, RegionROI, ImageReduced)</l>
+<l>        scale_image (ImageReduced, ImageScaled, Mult, Add)</l>
+<c>        * </c>
+<c>        * 将差分模型应用于检测。.</c>
+<l>        count_seconds (StartSeconds)</l>
+<l>        compare_ext_variation_model (ImageScaled, RegionDiff, VariationID, 'light_dark')</l>
+<l>        count_seconds (EndSeconds)</l>
+<c>        * 分析明暗缺陷区域。</c>
+<l>        dev_display (rImage)</l>
+<l>        count_obj (RegionDiff, NumberRegionDiff)</l>
+<l>        for I := 1 to NumberRegionDiff by 1</l>
+<l>            select_obj (RegionDiff, RegionDiffSelected, I)</l>
+<l>            opening_circle (RegionDiffSelected, RegionOpening, 2.5)</l>
+<l>            connection (RegionOpening, ConnectedRegions)</l>
+<l>            select_shape (ConnectedRegions, DefectRegions, 'height', 'and', 20, 99999)</l>
+<c>            * </c>
+<c>            * 将区域转换到初始位置的输入图像</c>
+<l>            hom_mat2d_invert (HomMat2DImage, HomMat2DInvert)</l>
+<l>            affine_trans_region (DefectRegions, DefectRegionsTrans, HomMat2DInvert, 'nearest_neighbor')</l>
+<l>            closing_circle (DefectRegionsTrans, DefectRegionsClosing, 1.5)</l>
+<c>            * </c>
+<c>            * 使用不同颜色显示明暗缺陷</c>
+<l>            dev_set_line_width (2)</l>
+<l>            dev_set_draw ('fill')</l>
+<l>            if (I == 1)</l>
+<l>                dev_set_color ('red')</l>
+<l>            else</l>
+<l>                dev_set_color ('orange')</l>
+<l>            endif</l>
+<l>            dev_display (DefectRegionsClosing)</l>
+<c>            * </c>
+<c>            * 增强缺陷区域。</c>
+<l>            dev_set_color ('magenta')</l>
+<l>            dev_set_draw ('margin')</l>
+<l>            union1 (DefectRegionsClosing, RegionUnion)</l>
+<l>            closing_circle (RegionUnion, RegionClosing, 10)</l>
+<l>            connection (RegionClosing, DefectRegionEnlarged)</l>
+<l>            elliptic_axis (DefectRegionEnlarged, Ra, Rb, Phi)</l>
+<l>            if (|Phi|)</l>
+<l>                area_center (DefectRegionEnlarged, Area, RowEllipse, ColumnEllipse)</l>
+<l>                gen_ellipse (Ellipse, RowEllipse, ColumnEllipse, Phi, Ra * 2, Rb * 2)</l>
+<l>                dev_display (Ellipse)</l>
+<l>            endif</l>
+<l>        endfor</l>
+<l>        dev_set_line_width (1)</l>
+<l>        dev_set_color ('green')</l>
+<l>        get_generic_shape_model_result_object (ModelContoursFound, MatchResultID, 'best', 'contours')</l>
+<l>        dev_display (ModelContoursFound)</l>
+<c>        * </c>
+<l>        TimePrintInspect := EndSeconds - StartSeconds</l>
+<l>        disp_message (WindowHandle, 'Inspection Time: ' + ((TimeObjSearch + TimePrintInspect) * 1000.0)$'.02' + ' ms', 'window', 12, 12, 'black', 'true')</l>
+<l>    else</l>
+<l>        disp_message (WindowHandle, 'No shape model found', 'window', 12, 12, 'red', 'true')</l>
+<l>    endif</l>
+<c>*  </c>
+<l>    if (I &lt; 9)</l>
+<l>        disp_continue_message (WindowHandle, 'black', 'true')</l>
+<l>        stop ()</l>
+<l>    endif</l>
+<l>endfor</l>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+<procedure name="inspect_cap">
+<interface>
+<io>
+<par name="rImage" base_type="iconic" dimension="0"/>
+<par name="RegionROI" base_type="iconic" dimension="0"/>
+</io>
+<ic>
+<par name="WindowHandle" base_type="ctrl" dimension="0"/>
+<par name="ModelID" base_type="ctrl" dimension="0"/>
+<par name="VariationID" base_type="ctrl" dimension="0"/>
+<par name="RowModel" base_type="ctrl" dimension="0"/>
+<par name="ColumnModel" base_type="ctrl" dimension="0"/>
+<par name="BackgroundGVModel" base_type="ctrl" dimension="0"/>
+<par name="ForegroundGVModel" base_type="ctrl" dimension="0"/>
+</ic>
+</interface>
+<body>
+<c></c>
+</body>
+<docu id="inspect_cap">
+<parameters>
+<parameter id="BackgroundGVModel"/>
+<parameter id="ColumnModel"/>
+<parameter id="ForegroundGVModel"/>
+<parameter id="ModelID"/>
+<parameter id="RegionROI"/>
+<parameter id="RowModel"/>
+<parameter id="VariationID"/>
+<parameter id="WindowHandle"/>
+<parameter id="rImage"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="get_model_region">
+<interface>
+<io>
+<par name="rImage" base_type="iconic" dimension="0"/>
+</io>
+<oo>
+<par name="RegionROI" base_type="iconic" dimension="0"/>
+<par name="ImageReduced" base_type="iconic" dimension="0"/>
+</oo>
+</interface>
+<body>
+<c></c>
+<c>* Segment label on the cap</c>
+<l>binary_threshold (rImage, BrightRegion, 'max_separability', 'light', UsedThreshold)</l>
+<l>dilation_circle (BrightRegion, RegionDilation, 1.5)</l>
+<l>connection (RegionDilation, ConnectedRegions)</l>
+<l>select_shape (ConnectedRegions, SelectedRegions, 'area', 'and', 100, 99999)</l>
+<l>union1 (SelectedRegions, LabelRegion)</l>
+<l>smallest_circle (LabelRegion, Row, Column, Radius)</l>
+<l>smallest_rectangle1 (LabelRegion, Row1, Column1, Row2, Column2)</l>
+<c></c>
+<c>* Define model region</c>
+<l>gen_circle (Region, Row, Column, Radius)</l>
+<l>gen_rectangle1 (LabelRectangle, Row1, Column1, Row2, Column2)</l>
+<l>intersection (Region, LabelRectangle, RegionIntersection)</l>
+<l>dilation_circle (RegionIntersection, RegionROI, 5.5)</l>
+<l>reduce_domain (rImage, RegionROI, ImageReduced)</l>
+<l>return ()</l>
+</body>
+<docu id="get_model_region">
+<parameters>
+<parameter id="ImageReduced"/>
+<parameter id="RegionROI"/>
+<parameter id="rImage"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="get_grayval_range">
+<interface>
+<io>
+<par name="Image" base_type="iconic" dimension="0"/>
+<par name="RegionROI" base_type="iconic" dimension="0"/>
+</io>
+<oo>
+<par name="RegionForeground" base_type="iconic" dimension="0"/>
+<par name="RegionBackground" base_type="iconic" dimension="0"/>
+</oo>
+<oc>
+<par name="BackgroundGVal" base_type="ctrl" dimension="0"/>
+<par name="ForegroundGVal" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<c></c>
+<l>return ()</l>
+</body>
+<docu id="get_grayval_range">
+<parameters>
+<parameter id="BackgroundGVal"/>
+<parameter id="ForegroundGVal"/>
+<parameter id="Image"/>
+<parameter id="RegionBackground"/>
+<parameter id="RegionForeground"/>
+<parameter id="RegionROI"/>
+</parameters>
+</docu>
+</procedure>
+</hdevelop>

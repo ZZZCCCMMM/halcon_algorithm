@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="23.05.0.0">
+<procedure name="main">
+<interface/>
+<body>
+<c>* 这个示例程序向您展示了如何使用</c>
+<c>* SVM分类器执行纹理检查任务</c>
+<l>dev_update_off ()</l>
+<c>* </c>
+<l>read_image (Image, 'plastic_mesh/plastic_mesh_01')</l>
+<l>get_image_size (Image, Width, Height)</l>
+<l>dev_close_window ()</l>
+<l>dev_open_window (0, 0, Width, Height, 'black', WindowHandle)</l>
+<l>dev_set_color ('red')</l>
+<l>set_display_font (WindowHandle, 16, 'mono', 'true', 'false')</l>
+<c>* 用于分类的纹理过滤器将返回图像上的工件</c>
+<c>* 边界，因为要检查的塑料网格的图像没有</c>
+<c>* 包含一个整数的网格单元。因为这会导致错误</c>
+<c>* 在图像边缘检测到错误时，必须排除靠近的区域</c>
+<c>* 从图像边界进行训练和分类。这是通过以下矩形完成的</c>
+<c>* 该图像随后被按2倍的比例缩小。</c>
+<l>gen_rectangle1 (Rectangle, 10, 10, Height / 2 - 11, Width / 2 - 11)</l>
+<c>* 创建SVM分类器</c>
+<l>create_class_svm (5, 'rbf', 0.01, 0.0005, 1, 'novelty-detection', 'normalization', 5, SVMHandle)</l>
+<c>* 训练是基于五张不包含错误的图像.</c>
+<l>for J := 1 to 5 by 1</l>
+<l>    read_image (Image, 'plastic_mesh/plastic_mesh_' + J$'02')</l>
+<c>    * 缩小图像，网格的分辨率非常高</c>
+<l>    zoom_image_factor (Image, ImageZoomed, 0.5, 0.5, 'constant')</l>
+<l>    dev_display (ImageZoomed)</l>
+<l>    disp_message (WindowHandle, 'Adding training samples...', 'window', 12, 12, 'black', 'true')</l>
+<c>    * 生成纹理图像</c>
+<l>    gen_texture_image (ImageZoomed, ImageTexture)</l>
+<c>    * 将样本添加到分类器中</c>
+<l>    add_samples_image_class_svm (ImageTexture, Rectangle, SVMHandle)</l>
+<l>endfor</l>
+<l>dev_display (ImageZoomed)</l>
+<l>disp_message (WindowHandle, 'Training SVM...', 'window', 12, 12, 'black', 'true')</l>
+<c>* 训练支持向量机。这将生成相当多的支持向量。</c>
+<l>train_class_svm (SVMHandle, 0.001, 'default')</l>
+<c>* 为了提高分类速度，通过reduce_class_svm减少支持向量的数量，得到一个名为svmhandlerreduced的新分类器</c>
+<l>reduce_class_svm (SVMHandle, 'bottom_up', 2, 0.001, SVMHandleReduced)</l>
+<c>* 检测塑料网格中的错误。</c>
+<l>dev_set_draw ('margin')</l>
+<l>dev_set_line_width (3)</l>
+<l>for J := 1 to 14 by 1</l>
+<c>    * 在循环中读取图像。每个图像再次缩放并转换为纹理图像。</c>
+<c>    * 对ROI使用算子classify_image_class_svm，将结果存储在SVMHandleReduced</c>
+<l>    read_image (Image, 'plastic_mesh/plastic_mesh_' + J$'02')</l>
+<l>    zoom_image_factor (Image, ImageZoomed, 0.5, 0.5, 'constant')</l>
+<l>    dev_display (ImageZoomed)</l>
+<l>    dev_set_color ('white')</l>
+<l>    dev_display (Rectangle)</l>
+<l>    gen_texture_image (ImageZoomed, ImageTexture)</l>
+<l>    reduce_domain (ImageTexture, Rectangle, ImageTextureReduced)</l>
+<c>    * 使用SVM进行检测</c>
+<l>    classify_image_class_svm (ImageTextureReduced, Errors, SVMHandleReduced)</l>
+<c>    * 由在图像中可视化分类返回的区域错误。应用形态学算子平滑误差区域边界，</c>
+<c>    * 提取连通分量。选择一定大小的区域，将纹理检测结果可视化为文本。</c>
+<c>    * 如果所选区域的数量(NumErrors)为0，则网格的纹理被分类为良好。否则，网格被分类为错误。</c>
+<l>    opening_circle (Errors, ErrorsOpening, 3.5)</l>
+<l>    closing_circle (ErrorsOpening, ErrorsClosing, 10.5)</l>
+<l>    connection (ErrorsClosing, ErrorsConnected)</l>
+<l>    select_shape (ErrorsConnected, FinalErrors, 'area', 'and', 300, 1000000)</l>
+<l>    count_obj (FinalErrors, NumErrors)</l>
+<l>    dev_set_color ('red')</l>
+<l>    dev_display (FinalErrors)</l>
+<l>    if (NumErrors &gt; 0)</l>
+<l>        disp_message (WindowHandle, 'Mesh not OK', 'window', 12, 12, 'red', 'true')</l>
+<l>    else</l>
+<l>        disp_message (WindowHandle, 'Mesh OK', 'window', 12, 12, 'forest green', 'true')</l>
+<l>    endif</l>
+<l>    if (J &lt; 14)</l>
+<l>        disp_continue_message (WindowHandle, 'black', 'true')</l>
+<l>    endif</l>
+<l>    stop ()</l>
+<l>endfor</l>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+<procedure name="gen_texture_image">
+<interface>
+<io>
+<par name="Image" base_type="iconic" dimension="0"/>
+</io>
+<oo>
+<par name="ImageTexture" base_type="iconic" dimension="0"/>
+</oo>
+</interface>
+<body>
+<c>* The texture image is a five-channel image that contains the result of applying</c>
+<c>* five different Laws filters, which basically correspond to first and second</c>
+<c>* derivatives, and smoothing them sufficiently.</c>
+<l>texture_laws (Image, ImageEL, 'el', 5, 5)</l>
+<l>texture_laws (Image, ImageLE, 'le', 5, 5)</l>
+<l>texture_laws (Image, ImageES, 'es', 1, 5)</l>
+<l>texture_laws (Image, ImageSE, 'se', 1, 5)</l>
+<l>texture_laws (Image, ImageEE, 'ee', 2, 5)</l>
+<l>compose5 (ImageEL, ImageLE, ImageES, ImageSE, ImageEE, ImageLaws)</l>
+<l>smooth_image (ImageLaws, ImageTexture, 'gauss', 5)</l>
+<l>return ()</l>
+</body>
+<docu id="gen_texture_image">
+<parameters>
+<parameter id="Image"/>
+<parameter id="ImageTexture"/>
+</parameters>
+</docu>
+</procedure>
+</hdevelop>
